@@ -43,7 +43,7 @@ jobs:
           distribution: liberica
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "🔨 Build project without tests"
@@ -84,7 +84,7 @@ jobs:
           distribution: liberica
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "🔨 Build project"
@@ -113,7 +113,7 @@ jobs:
           distribution: 'liberica'
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "🔨 Build project without tests"
@@ -169,7 +169,7 @@ jobs:
           distribution: liberica
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "🏃 Run Functional Tests"
@@ -203,7 +203,7 @@ jobs:
           distribution: liberica
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
@@ -236,7 +236,7 @@ jobs:
           distribution: liberica
           java-version: ${{ matrix.java }}
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
@@ -264,7 +264,7 @@ jobs:
           distribution: liberica
           java-version: 17
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "📤 Publish Gradle Snapshot Artifacts"
@@ -312,7 +312,7 @@ jobs:
           distribution: liberica
           java-version: 17
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "📤 Publish Grails-Core Snapshot Artifacts"
@@ -369,7 +369,7 @@ jobs:
           distribution: liberica
           java-version: 17
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY  }}
       - name: "📤 Publish Gradle Snapshot Artifacts"
@@ -420,7 +420,7 @@ jobs:
           distribution: liberica
           java-version: 17
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔨 Build Snapshot Documentation"
