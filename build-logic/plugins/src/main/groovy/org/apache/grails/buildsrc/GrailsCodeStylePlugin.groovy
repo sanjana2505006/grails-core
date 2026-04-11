@@ -25,16 +25,12 @@ import groovy.transform.CompileStatic
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.Directory
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.api.plugins.quality.CodeNarc
 import org.gradle.api.plugins.quality.CodeNarcExtension
 import org.gradle.api.plugins.quality.CodeNarcPlugin
-import org.gradle.api.tasks.Copy
-import org.gradle.process.ExecSpec
-import org.apache.tools.ant.taskdefs.condition.Os
 
 @CompileStatic
 class GrailsCodeStylePlugin implements Plugin<Project> {
@@ -52,17 +48,10 @@ class GrailsCodeStylePlugin implements Plugin<Project> {
     void apply(Project project) {
         initExtension(project)
         configureCodeStyle(project)
-        registerFormattingTasks(project)
-        doNotApplyStylingToTests(project)
     }
 
     private static void initExtension(Project project) {
         def gce = project.extensions.create('grailsCodeStyle', GrailsCodeStyleExtension)
-
-        // Unfortunately, the codenarc plugin is still using a non-lazy property.
-        // Rather than rewrite the plugin to use afterEvaluate,
-        // this plugin uses properties to override the configuration location by default
-
 
         gce.checkstyleDirectory.set(project.provider {
             def directory = project.hasProperty(CHECKSTYLE_DIR_PROPERTY) ?
@@ -108,25 +97,6 @@ class GrailsCodeStylePlugin implements Plugin<Project> {
                 throw new IllegalStateException("Could not locate default configuration file: ${defaultResource}")
             }
             expectedPath.text = defaultValue.text
-        }
-    }
-
-    private static void doNotApplyStylingToTests(Project project) {
-        if (project.tasks.names.contains('checkstyleTest')) {
-            project.tasks.named('checkstyleTest') {
-                it.enabled = false // Do not check test sources at this time
-            }
-        }
-
-        project.afterEvaluate {
-            // Do not check test sources at this time
-            ['codenarcIntegrationTest', 'codenarcTest'].each { testTaskName ->
-                if (project.tasks.names.contains(testTaskName)) {
-                    project.tasks.named(testTaskName) {
-                        it.enabled = false
-                    }
-                }
-            }
         }
     }
 
@@ -195,90 +165,6 @@ class GrailsCodeStylePlugin implements Plugin<Project> {
                             .dir('codenarc')
                             .file("${project.name}-${task.name}.xml")
             )
-        }
-    }
-
-    private static void registerFormattingTasks(Project project) {
-        if (project == project.rootProject) {
-            project.tasks.register('installGitHooks', Copy) {
-                it.group = 'verification'
-                it.description = 'Installs the git pre-commit hook for automatic code formatting'
-                it.from(project.rootProject.layout.projectDirectory.file('etc/hooks/pre-commit'))
-                it.into(project.rootProject.layout.projectDirectory.dir('.git/hooks'))
-                it.fileMode = 0755
-            }
-        }
-
-        project.tasks.register('formatCode') {
-            it.group = 'verification'
-            it.description = 'Formats Java and Groovy source files using the IntelliJ command line formatter'
-
-            it.doLast {
-                String ideaHome = (project.findProperty('idea.home') ?: System.getenv('IDEA_HOME')) as String
-                String executable = Os.isFamily(Os.FAMILY_WINDOWS) ? 'format.bat' : 'format.sh'
-                File formatExec = null
-
-                if (ideaHome) {
-                    formatExec = new File(ideaHome, "bin/$executable")
-                } else {
-                    // Try common paths on macOS
-                    if (Os.isFamily(Os.FAMILY_MAC)) {
-                        def commonPaths = [
-                                "/Applications/IntelliJ IDEA.app/Contents/bin/$executable",
-                                "/Applications/IntelliJ IDEA CE.app/Contents/bin/$executable"
-                        ]
-                        for (path in commonPaths) {
-                            File f = new File(path)
-                            if (f.exists()) {
-                                formatExec = f
-                                break
-                            }
-                        }
-                    }
-
-                    if (formatExec == null && !Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        // On Linux/Mac, try to find 'idea' in PATH
-                        try {
-                            def out = new ByteArrayOutputStream()
-                            project.exec { ExecSpec exec ->
-                                exec.commandLine 'which', 'idea'
-                                exec.standardOutput = out
-                                exec.ignoreExitValue = true
-                            }
-                            def path = out.toString().trim()
-                            if (path) {
-                                formatExec = new File(new File(path).parentFile, executable)
-                            }
-                        } catch (Exception ignored) { }
-                    }
-                }
-
-                if (formatExec == null || !formatExec.exists()) {
-                    project.logger.error("IntelliJ formatter executable not found.")
-                    project.logger.error("Please set 'idea.home' property or IDEA_HOME environment variable to your IntelliJ installation directory.")
-                    project.logger.error("Example: ./gradlew formatCode -Pidea.home=/Applications/IntelliJ\\ IDEA.app/Contents")
-                    throw new RuntimeException("IntelliJ formatter executable not found.")
-                }
-
-                def filesToFormat = project.findProperty('formatFiles')
-                def settingsFile = project.rootProject.file('.idea/codeStyles/Project.xml')
-
-                if (!settingsFile.exists()) {
-                    throw new RuntimeException("IntelliJ code style settings not found at ${settingsFile.absolutePath}")
-                }
-
-                project.exec { ExecSpec exec ->
-                    exec.commandLine formatExec.absolutePath
-                    exec.args '-s', settingsFile.absolutePath
-                    exec.args '-mask', '*.java,*.groovy'
-                    exec.args '-r'
-                    if (filesToFormat) {
-                        exec.args((filesToFormat.toString()).split(','))
-                    } else {
-                        exec.args project.projectDir.absolutePath
-                    }
-                }
-            }
         }
     }
 }
