@@ -32,10 +32,11 @@ class GrailsFormatPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        registerGitHooks(project)
         registerFormattingTasks(project)
     }
 
-    private static void registerFormattingTasks(Project project) {
+    private static void registerGitHooks(Project project) {
         if (project == project.rootProject) {
             project.tasks.register('installGitHooks', Copy) {
                 it.group = 'verification'
@@ -45,7 +46,9 @@ class GrailsFormatPlugin implements Plugin<Project> {
                 it.fileMode = 0755
             }
         }
+    }
 
+    private static void registerFormattingTasks(Project project) {
         ExecOperationsSupport execSupport = project.objects.newInstance(ExecOperationsSupport)
         def ideaExecProvider = project.providers.gradleProperty('idea.exec')
                 .orElse(Os.isFamily(Os.FAMILY_WINDOWS) ? 'format.bat' : 'idea')
